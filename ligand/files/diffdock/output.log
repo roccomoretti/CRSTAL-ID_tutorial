@@ -1,0 +1,21 @@
+Standard out:
+Generating ESM language model embeddings
+Processing 1 of 1 batches (1 sequences)
+
+Standard error:
+/home/appuser/micromamba/envs/diffdock/lib/python3.9/site-packages/Bio/pairwise2.py:278: BiopythonDeprecationWarning: Bio.pairwise2 has been deprecated, and we intend to remove it in a future release of Biopython. As an alternative, please consider using Bio.Align.PairwiseAligner as a replacement, and contact the Biopython developers if you still need the Bio.pairwise2 module.
+  warnings.warn(
+[2024-Dec-02 22:21:42 UTC] [inference.py:153] INFO - DiffDock will run on cuda
+[2024-Dec-02 22:21:53 UTC] [inference.py:184] INFO - Confidence model uses different type of graphs than the score model. Loading (or creating if not existing) the data for the confidence model now.
+[2024-Dec-02 22:22:02 UTC] [inference.py:223] INFO - Size of test dataset: 1
+
+0it [00:00, ?it/s]/home/appuser/DiffDock/datasets/parse_chi.py:91: RuntimeWarning: invalid value encountered in cast
+  Y = indices.astype(int)
+
+1it [00:55, 55.18s/it]
+1it [00:55, 55.18s/it]
+[2024-Dec-02 22:22:58 UTC] [inference.py:312] INFO - 
+    Failed for 0 / 1 complexes.
+    Skipped 0 / 1 complexes.
+
+[2024-Dec-02 22:22:58 UTC] [inference.py:313] INFO - Results saved in /tmp/tmpprhgpww8

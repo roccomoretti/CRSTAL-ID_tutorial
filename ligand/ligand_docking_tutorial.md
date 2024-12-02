@@ -8,9 +8,9 @@ being created through ester hydrolysis of the ethyl ester. As the carboxylate fo
 
 ## Initial set-up
 
-For convienience, we'll be using a high-resolution structure of neuraminidase which wascrystalized in the presence of oseltamivir carboxylate. This is "cheating" to some extent, as the structure of the sidechains and backbones are pre-optimized for binding of the desired small molecule. In a true experimental condition, we would likely be working with a protein crystalized in the apo state, or with a different ligand. (Or with an AlphaFold-predicted structural model.) The two approaches are often termed "self docking" and "cross docking" in the ligand docking literature.
+For convenience, we'll be using a high-resolution structure of neuraminidase which was crystallized in the presence of oseltamivir carboxylate. This is "cheating" to some extent, as the structure of the sidechains and backbones are pre-optimized for binding of the desired small molecule. In a true experimental condition, we would likely be working with a protein crystallized in the apo state, or with a different ligand. (Or with an AlphaFold-predicted structural model.) The two approaches are often termed "self docking" and "cross docking" in the ligand docking literature.
 
-1. Create a new working directory, and downlod the 2QWK structure as PDB Format.
+1. Create a new working directory, and download the 2QWK structure as PDB Format.
 	1. Go to <https://rcsb.org> and type '2qwk' in the search bar.
 	2. Click on 'Download Files' on the right side of the page, then 'PDB Format'.
 	3. Save the PDB file in your working directory as `2qwk.pdb`. (Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
@@ -24,7 +24,7 @@ For convienience, we'll be using a high-resolution structure of neuraminidase wh
 
 ### Protein pre-processing
 
-Neuraminidase is biologically a tetramer, but the 2QWK structure only has a single chain in the asymmetric unit (and thus the PDB file). This is okay! The neuraminidase active site is contained entirely within one chain, and the docking will be minimially affected by the lack of other members of the tetramer. (Note this is not universally the case. For example, the active site of HIV protease sits at a dimeric interface, and requires both chains to be present.)
+Neuraminidase is biologically a tetramer, but the 2QWK structure only has a single chain in the asymmetric unit (and thus the PDB file). This is okay! The neuraminidase active site is contained entirely within one chain, and the docking will be minimally affected by the lack of other members of the tetramer. (Note this is not universally the case. For example, the active site of HIV protease sits at a dimeric interface, and requires both chains to be present.)
 
 It is, however, worth cleaning up the structure of crystallization artifacts and other portions which are not needed for the docking. (Including the oseltamivir which is currently present!)
 
@@ -40,7 +40,7 @@ To avoid artifacts related to docking into a structure which isn't properly opti
 1. Go to <https://rosie.rosettacommons.org> and click the Relax application.
 2. Upload the 2qwk_A.pdb structure on the submission page
 	Note that the ROSIE display will show it as a tetramer, but that's only because the web page display code iss reading the header information in the PDB -- Rosetta will only work with the single chain which is actually present in the PDB file.
-3. Check the box labeled "tether backbone coordinates of the pdbs being relaxed to the coordinates in the xtal native". Don't teather sidechain atoms
+3. Check the box labeled "tether backbone coordinates of the pdbs being relaxed to the coordinates in the xtal native". Don't tether sidechain atoms
 4. Give the job a descriptive name and press "upload and queue job"
 
 * Once the job completes, go to the results page and click the download button next to "output/relaxed.pdb" to download the structure. Save the file as 2qwk_A_relaxed.pdb in your working directory.
@@ -90,27 +90,34 @@ We are now ready to dock the ligand using the ROSIE RosettaLigand application
 1. Go to https://rosie.rosettacommons.org/ and click the "Ligand Docking" application
 2. Open "[Ligand Docking Server Documentation]" in a new tab to read the documentation
 3. Click "[Submit Ligand Docking task]"
-4. Enter a short job description (e.g. "Dock oseltamivir")
+4. Enter a short job description.
 5. Upload 2qwk_A_relaxed.pdb as the Input PDB of the protein
 6. Upload oseltamivir.sdf as the Input SDF of the ligand.
-7. Click "Generate ligand conformers with the BCL" (200 is fine)
+7. Click "Generate ligand conformers with the BCL" (200 conformers is fine)
 8. Enter the X, Y, and Z coordinates from the "Docking Location" step.
-9. For time considerations, reduce "Number of structures to generate" to 50 and "Number of Monte Carlo sampling steps" to 250. Other values can be left as-is.
-
+9. Other parameters can be left as-is.
 
 ## Analysis of docking results.
 
 ### Interpreting ROSIE output
 
-<< ROSIE page post-analysis >>
+For RosettaLigand docking, ROSIE provides a preview of the 10 best structures by interface energy (predicted binding energy).
+
+The plot displayed here is *not* a score-versus rmsd plot, but rather an interface energy versus total score (one including protein internal energy). 
+This is because, in general, the starting ligand structure is not a good reference structure.
+
+Below the graph is a score table. The main score to be interested in is the interface_delta score, which measures (in arbitrary units) how good Rosetta
+thinks the binding energy is. Other scores are primary the individual Rosetta terms of the complex, or just those of the protein-ligand interface (those prefixed with if_).
+
+Download the top 10 lowest interface energy structures for further analysis.
 
 ### Examining residue energy contributions.
 
 The ROSIE energy breakdown app can also work with protein-ligand complexes.
 
 1. Go to <https://rosie.rosettacommons.org> and click the "Energy Breakdown" application.
-2. Upload the docked.pdb structure 
-3. For ligand docking purposes, choose the "ligand" scorefunction, and upload the oseltamivir.sdf as a ligand parameter file (with ligand three letter code LIG)
+2. Upload the best structure from the RosettaLigand docking. 
+3. For ligand docking purposes, choose the "ligand" scorefunction, and upload the oseltamivir.sdf as a ligand parameter file (with ligand three letter code LG1)
 4. Enter a descriptive job name and click the "Upload and queue job" button.
 
 Once the job is done, you can examine the results.
@@ -119,7 +126,7 @@ Once the job is done, you can examine the results.
 2. Residue pairs should be listed with the partner which comes earlier in the PDB coming first. We can use that to select only those lines involving the ligand (which should be the last residue)'
 	1. Highlight and delete all the "onebody" terms at the top of the sheet.
 	2. Sort by the `resid2` column
-	3. Highlight and delete all the lines (except the column label line) from thei top of the sheet until the ligand 1X is listed in the `pdbid2` column
+	3. Highlight and delete all the lines (except the column label line) from the top of the sheet until the ligand 1X is listed in the `pdbid2` column
 	4. If successful, all the remaining lines should just be between residues in the protein and the docked ligand.
 3. Sort the remaining lines (ascending) by the `total` column. More negative scores are better.
 
@@ -127,21 +134,31 @@ Residue-residue pairs with a highly negative score are contributing favorably to
 
 For a detailed description of what each energy term means, please see Alford et al. <https://doi.org/10.1021/acs.jctc.7b00125> Briefly, here are the meanings of the non-zero terms you're likely to see with `ligand` scoring for protein/small molecule interactions:
 
-* fa_atr - the attractive component of the Lennard Jones (van de Waals) interaction 
-* fa_rep - the repulsive component of the the Lennard Jones (van de Waals) interaction
+* fa_atr - the attractive component of the Lennard Jones (van der Waals) interaction 
+* fa_rep - the repulsive component of the the Lennard Jones (van der Waals) interaction
 * fa_elec - the Coulombic electrostatic interaction
 * fa_sol - Implicit solvation burial terms (from Lazaridus & Karplus, with modifications).
 * hbond_bb_sc - ligand-protein backbone hydrogen bonds
-* hbond_sc - lignd-protein sidechain hydrogen bonds
+* hbond_sc - ligand-protein sidechain hydrogen bonds
 
 (Other terms are either residue-internal energies, protein-protein interaction specific, or will otherwise not show up for protein/ligand interactions.)
 
 Take a moment to look at the residue which are highly scored (either negatively or positively) in interaction with the ligand:
-* Accoring to the scoring, what sort of interactions are contributing to that score value?
+* According to the scoring, what sort of interactions are contributing to that score value?
 * Looking at the docked structure in ChimeraX and visualizing those residues, does that interaction make sense?
 * Can you determine which interactions are sidechain-based and which are backbone based?
 * Would this analysis be helpful in determining how potential mutations affect binding?
 * Could this analysis help guide improving the ligand?
+
+### Looking at the results with ChimeraX
+
+ChimeraX has a tutorial about examining protein-ligand interfaces. <https://www.cgl.ucsf.edu/chimerax/docs/user/tutorials/binding-sites.html>
+
+Work through the tutorial, but using the 2qwk structure and the structures from RosettaLigand docking.
+
+Note: If the lowest energy structure from your RosettaLigand docking isn't close to the 2qwk, determine if any of the top ten structures are. 
+If there is one, repeat the Energy Breakdown step with that structure, and compare it with the lowest energy structure -- 
+why does Rosetta think the low energy structure is better than the one which is closest to the crystallized structure?
 
 ## Machine Learning docking approaches.
 
@@ -149,8 +166,9 @@ Using ML techniques to do ligand docking is an active area of research and a lar
 
 One of the big developments recently is that recent structure prediction tools such as AlphaFold3, RoseTTAFold-AllAtom, Chai-1 and Boltz-1 have extended themselves to include prediction of non-protein residues, including arbitrary small molecule ligands.
 
-Unfortunately, local installs of these tools are generally needed, as the AlphaFold3 server does not include support for arbitrary small molecules, and the other approaches are generally not availible as a web-accessible server. The execption is that Chai-1 is availible (though with restrictions) on a web server at <https://lab.chaidiscovery.com/> and Boltz-1 has a preliminary ColabFold integration (<https://github.com/sokrypton/ColabFold>).
+Unfortunately, local installs of these tools are generally needed, as the AlphaFold3 server does not include support for arbitrary small molecules, and the other approaches are generally not available as a web-accessible server. The exeception is that Chai-1 is available (though with restrictions) on a web server at <https://lab.chaidiscovery.com/> and Boltz-1 has a preliminary ColabFold integration (<https://github.com/sokrypton/ColabFold>).
 
+An example Chai-1 prediction run is availible in files/chai1. You can load the resultant CIF files and compare them with the full 2qwk.pdb structure. (Note the [matchmaker command](https://www.cgl.ucsf.edu/chimerax/docs/user/commands/matchmaker.html) of ChimeraX is useful for aligning one protein structure to another.) Keep in mind that these structures were generated from just the input sequence (fasta) and the ligand SMILES string. However, it is highly likely that 2qwk (and homologous structures) were in the training set, so the weights of Chai-1 were tuned such that it was able to recapitulate this structure, as such performance on this docking task is unlikely to be representative of how well it will do on an unknown task.
 
 ### ML Ligand docking
 
@@ -158,13 +176,12 @@ There are also a number of ligand-docking specific ML models. The most well know
 
 DiffDock has an official webserver on HuggingFace (a sever which is used heavily by machine learning people for storing models and datasets). <https://huggingface.co/spaces/reginabarzilaygroup/DiffDock-Web>
 
-
 1. Go to <https://huggingface.co/spaces/reginabarzilaygroup/DiffDock-Web>
 2. Upload 2qwk_A.pdb as the Input PDB
 	Since DiffDock does not use the Rosetta energy function, you don't (necessarily) need to pre-relax the structure.
 3. Upload oseltamivir.sdf as the Input Ligand (or alternatively, provide the SMILES string)
 4. Leave Configuration blank.
 5. Ignore the "examples" box and press the "Run DiffDock" button. 
-
-
+	
+When the run completes, download the results (which is a zip file containing the input PDB and docked models in SDF format), and open the structures in ChimeraX along with the full 2qwk structure? When examining the structure, keep in mind that DiffDock was likely trained on 2qwk (and related structures), and as such its weights were tuned to do well on this task. Performance here is not necessarily representative of what would happen in cases where the results are unknown.
 
