@@ -12,7 +12,8 @@ Hemagglutinin is normally a trimer, but for this tutorial we'll be docking it as
 
 	1. Go to <https://rcsb.org> and type '3gbn' in the search bar.
 	2. Click on 'Download Files' on the right side of the page, then 'PDB Format'.
-	3. Save the PDB file in your working directory as `3gbn.pdb`. (Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
+	3. Save the PDB file in your working directory as `3gbn.pdb`.  
+		(Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
 	4. Repeat for 3gbm
 
 2. Open both structures in ChimeraX, and examine the chains for each structures. For structure 3GBM we have two complexes in the same crystal unit: ABHL and CDIM. The chains AB/CD represents the head domain and the stalk domain of the hemagglutinin protein, and HL/IM the CR6261 heavy and light chains. For structure 3GBN we have the single complex ABHL. In the next step we will extract the chain of interest for this cross-docking experiment: chains AB for 3GBM and chains HL for 3GBN.
@@ -23,7 +24,8 @@ We need to extract only the chains of interest from each structure. With both st
 
 1. From 3GBM we want chains A & B, but only the protein residues
 	1. Select the chains: `select #1/A,B & protein` (assumes 3GBM is model #1)
-	2. Save the chains as 3gbm_AB.pdb ( File->Save->File of Type->PDB->Save selected atoms only)
+	2. Save the chains as 3gbm_AB.pdb  
+		(File->Save->File of Type->PDB->Save selected atoms only)
    
 2. From 3GBN we want to save chains H & L. But when you examine the structure, notice how the H&L chains contains incomplete portions of the full-length antibody. For the purposes of docking, we only need the Fv region (the well-formed domains).
 	1. Visualize the C-terminal bit of chain H to remove: `color #2/H:112-188 magenta` (assumes 3GBN is model #2)
@@ -31,7 +33,8 @@ We need to extract only the chains of interest from each structure. With both st
 	3. Visualize the C-terminal bit of chain L to remove: `color #2/L:106-195 magenta`
 	4. Remove the same selection: `delete #2/L:106-195`
 	5. Select the chains: `select #2/H,L`
-	6. Save the file as 3gbn_HL.pdb ( File->Save->File of Type->PDB->Save selected atoms only )
+	6. Save the file as 3gbn_HL.pdb  
+		(File->Save->File of Type->PDB->Save selected atoms only)
 
 Reopen the 3gbm_AB.pdb and 3gbn_HL.pdb structures in ChimeraX, making sure the structures are what you expect them to be.
 
@@ -62,14 +65,22 @@ For Rosetta protein-protein docking, both partners need to be in the same input 
 
 For our docking protocol, we already know where the structures should roughly be docked, as we have a co-crystal structure of the partners.
 
-1. Open 3gbn.pdb as well as the 3gbm_AB_relaxed.pdb and 3gbn_HL_relaxed.pdb structures in ChimeraX.
+1. Open 3gbn.pdb as well as the 3gbm_AB_relaxed.pdb and 3gbn_HL_relaxed.pdb structures in ChimeraX.  
+
 	The following assumes 3gbn.pdb is model #1; 3gbm_AB_relaxed.pdb is model #2 and 3gbn_HL_relaxed.pdb is model #3
-2. Align the H & L chains of 3gbn_HL_relaxed.pdb to the H & L chains of 3gbn.pdb (via CA atoms)
-	align #3/H,L@CA & protein toAtoms #1/H,L@CA & protein matchNumbering true
-3. Align the A & B chains of 3gbm_AB_relaxed.pdb to the A & B chains of 3gbn.pdb
-	align #2/A,B@CA & protein toAtoms #1/A,B@CA & protein matchNumbering true
-4. Save the re-aligned chains to a file `combined.pdb`
+
+2. Align the H & L chains of 3gbn_HL_relaxed.pdb to the H & L chains of 3gbn.pdb (via CA atoms) 
+ 
+		align #3/H,L@CA & protein toAtoms #1/H,L@CA & protein matchNumbering true
+
+3. Align the A & B chains of 3gbm_AB_relaxed.pdb to the A & B chains of 3gbn.pdb  
+
+		align #2/A,B@CA & protein toAtoms #1/A,B@CA & protein matchNumbering true
+
+4. Save the re-aligned chains to a file `combined.pdb`  
+
 	File->Save->File of Type->PDB->(Make sure only 3gbm_AB_relaxed.pdb and 3gbn_HL_relaxed.pdb are selected in the box -- use ctrl-click or shift-click to select both.)
+
 5. Close/hide all open structures and open the combined.pdb file -- check to make sure it's what you expect it to be, has the all the chains in the expected relative orientation, and does not contain any extra residues from 3gbn.pdb.
 
 ## Docking
@@ -138,6 +149,7 @@ For a detailed description of what each energy term means, please see Alford et 
 (Other terms are either residue-internal energies, or will otherwise not show up for inter-chain residue-residue interactions.)
 
 Take a moment to look at the residues pairs which are highly scored (either negatively or positively):
+
 * According to the scoring, what sort of interactions are contributing to that score value?
 * Looking at the docked structure in ChimeraX and visualizing those residues, does that interaction make sense?
 * Can you determine which interactions are sidechain-based and which are backbone based?

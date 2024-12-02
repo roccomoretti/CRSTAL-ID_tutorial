@@ -13,12 +13,14 @@ For convenience, we'll be using a high-resolution structure of neuraminidase whi
 1. Create a new working directory, and download the 2QWK structure as PDB Format.
 	1. Go to <https://rcsb.org> and type '2qwk' in the search bar.
 	2. Click on 'Download Files' on the right side of the page, then 'PDB Format'.
-	3. Save the PDB file in your working directory as `2qwk.pdb`. (Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
+	3. Save the PDB file in your working directory as `2qwk.pdb`.  
+		(Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
 
 2. Download the ligand structure as an SDF format.
 	1. Go to <https://rcsb.org> and type 'G39' in the search bar.
 	2. Click on 'Download Files' on the right side of the page, then 'Structure Data File (ideal sdf)'.
-	3. Save the SDF file in your working directory as `G39_ideal.sdf`. (Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
+	3. Save the SDF file in your working directory as `G39_ideal.sdf`.  
+		(Note, the file may automatically download to your "Downloads" folder. If so, move the file into your working directory.)
 
 ## Structure pre-processing
 
@@ -29,26 +31,27 @@ Neuraminidase is biologically a tetramer, but the 2QWK structure only has a sing
 It is, however, worth cleaning up the structure of crystallization artifacts and other portions which are not needed for the docking. (Including the oseltamivir which is currently present!)
 
 1. Open 2qwk.pdb with ChimeraX
-2. Select the protein residues: `select protein`
-	Not selected are two glycan chains, waters, the oseltamivir in the active site and two metal ions. While one of the metals is a structural ion within the neuraminidase chain, it will likely not not affect ligand docking, and it causes issues with some of the Rosetta steps. We'll omit it.
-4. Save the selected residues as 2qwk_A.pdb (File->Save->File of Type->PDB->Save selected atoms only)
+2. Select the protein residues: `select protein`  
+	Not selected are two glycan chains, waters, the oseltamivir in the active site and two metal ions.  
+	While one of the metals is a structural ion within the neuraminidase chain, it will likely not not affect ligand docking, and it causes issues with some of the Rosetta steps. We'll omit it.
+3. Save the selected residues as 2qwk_A.pdb (File->Save->File of Type->PDB->Save selected atoms only)
 
 #### Refine the starting structure
 
 To avoid artifacts related to docking into a structure which isn't properly optimized within the Rosetta energy function, it's best to optimize the starting protein structure.
 
 1. Go to <https://rosie.rosettacommons.org> and click the Relax application.
-2. Upload the 2qwk_A.pdb structure on the submission page
+2. Upload the 2qwk_A.pdb structure on the submission page  
 	Note that the ROSIE display will show it as a tetramer, but that's only because the web page display code iss reading the header information in the PDB -- Rosetta will only work with the single chain which is actually present in the PDB file.
 3. Check the box labeled "tether backbone coordinates of the pdbs being relaxed to the coordinates in the xtal native". Don't tether sidechain atoms
 4. Give the job a descriptive name and press "upload and queue job"
 
-* Once the job completes, go to the results page and click the download button next to "output/relaxed.pdb" to download the structure. Save the file as 2qwk_A_relaxed.pdb in your working directory.
+Once the job completes, go to the results page and click the download button next to "output/relaxed.pdb" to download the structure. Save the file as 2qwk_A_relaxed.pdb in your working directory.
 
 
 ### Ligand pre-processing
 
-1. Open G39_ideal.sdf in ChimeraX
+1. Open G39_ideal.sdf in ChimeraX  
 	Note that ChimeraX will not show double bonds.
 
 The wwPDB provides oseltamivir in the neutral form, whereas the physiological state will have it with a charged carboxylate and a protonated amine. To properly dock the compound, we need to convert the ligand to the appropriate (physiological) form. 
@@ -56,16 +59,16 @@ The wwPDB provides oseltamivir in the neutral form, whereas the physiological st
 Unfortunately, there isn't a way to perform this editing with ChimeraX at the moment. As such, we'll use a different approach. 
 
 1. Go back to the G39 page on rcsb.org
-2. The "Isomeric SMILES" line contains a representation of the chemical structure of the molecule
+2. The "Isomeric SMILES" line contains a representation of the chemical structure of the molecule  
 	The SMILES format is way of representing chemical structures in text. It's somewhat straightforward to understand and modify if you [understand the format](https://www.daylight.com/dayhtml/doc/theory/theory.smiles.html).
 3. Copy the Isomeric SMILES for oseltamivir onto the clipboard.
 4. Go to the NIH NCI CADD Group Chemoinformatics Tools and User Services website at <https://cactus.nci.nih.gov/index.html>
 5. Click on the "Online SMILES Translator" link
 6. Paste the oseltamivir SMILES into the text box under Input Format
-7. Edit the SMILES string to be the carboxylate form
-	Convert `CCC(CC)O[C@@H]1C=C(C[C@@H]([C@H]1NC(=O)C)N)C(=O)O`
-	to      `CCC(CC)O[C@@H]1C=C(C[C@@H]([C@H]1NC(=O)C)[NH3+])C(=O)[O-]`
-	(Changing the last 'N' and the last 'O')
+7. Edit the SMILES string to be the carboxylate form  
+	Convert `CCC(CC)O[C@@H]1C=C(C[C@@H]([C@H]1NC(=O)C)N)C(=O)O`  
+	to      `CCC(CC)O[C@@H]1C=C(C[C@@H]([C@H]1NC(=O)C)[NH3+])C(=O)[O-]`  
+	(Changing the last 'N' and the last 'O')  
 8. In the output pane, select "SDF", "Kekule" and "3D"
 9. Click the "Translate" button.
 10. Click "Click here!" to download the structure.
@@ -79,8 +82,8 @@ RosettaLigand is a local docking approach, and requires definition of a docking 
 1. Open the original 2qwk.pdb file in ChimeraX.
 2. Find the oseltamivir ligand in the binding pocket.
 3. Ctrl-click an atom near the center of the ligand
-4. Run the command `getcrd sel`
-	The coordinates of the selected atom will be printed in the log
+4. Run the command `getcrd sel`  
+	The coordinates of the selected atom will be printed in the log  
 	(e.g. "Atom /A:800@C6 26.275 18.090 62.623")
 
 ## RosettaLigand docking
@@ -123,7 +126,7 @@ The ROSIE energy breakdown app can also work with protein-ligand complexes.
 Once the job is done, you can examine the results.
 
 1. Open `residue_energy_breakdown.tsv` with your spreadsheet program of choice.
-2. Residue pairs should be listed with the partner which comes earlier in the PDB coming first. We can use that to select only those lines involving the ligand (which should be the last residue)'
+2. Residue pairs should be listed with the partner which comes earlier in the PDB coming first. We can use that to select only those lines involving the ligand (which should be the last residue)
 	1. Highlight and delete all the "onebody" terms at the top of the sheet.
 	2. Sort by the `resid2` column
 	3. Highlight and delete all the lines (except the column label line) from the top of the sheet until the ligand 1X is listed in the `pdbid2` column
@@ -144,6 +147,7 @@ For a detailed description of what each energy term means, please see Alford et 
 (Other terms are either residue-internal energies, protein-protein interaction specific, or will otherwise not show up for protein/ligand interactions.)
 
 Take a moment to look at the residue which are highly scored (either negatively or positively) in interaction with the ligand:
+
 * According to the scoring, what sort of interactions are contributing to that score value?
 * Looking at the docked structure in ChimeraX and visualizing those residues, does that interaction make sense?
 * Can you determine which interactions are sidechain-based and which are backbone based?
@@ -177,7 +181,7 @@ There are also a number of ligand-docking specific ML models. The most well know
 DiffDock has an official webserver on HuggingFace (a sever which is used heavily by machine learning people for storing models and datasets). <https://huggingface.co/spaces/reginabarzilaygroup/DiffDock-Web>
 
 1. Go to <https://huggingface.co/spaces/reginabarzilaygroup/DiffDock-Web>
-2. Upload 2qwk_A.pdb as the Input PDB
+2. Upload 2qwk_A.pdb as the Input PDB  
 	Since DiffDock does not use the Rosetta energy function, you don't (necessarily) need to pre-relax the structure.
 3. Upload oseltamivir.sdf as the Input Ligand (or alternatively, provide the SMILES string)
 4. Leave Configuration blank.

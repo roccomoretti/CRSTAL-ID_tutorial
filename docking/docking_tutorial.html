@@ -1,0 +1,359 @@
+<h1 id="protein-protein-docking-tutorial">Protein-Protein Docking
+Tutorial</h1>
+<p>Computational protein-protein docking is the process of predicting
+the structure of a protein complex from the structures of each
+independent component. These techniques can generally be divided into
+global docking, where the binding interfaces are completely unknown, or
+local docking, where a rough idea of where the two systems come into
+contact are known.</p>
+<p>This tutorial presents a cross-docking benchmark experiment. The
+antibody CR6261 binds to multiple sub-types of influenza antigen
+hemagglutinin (HA). It has been crystallized with both H1 and H5 HA
+sub-types. In this tutorial the antibody from one crystal structure
+(3GBN) will be docked to the antigen from the other crystal structure
+(3GBM).</p>
+<h2 id="initial-set-up">Initial set-up</h2>
+<p>Hemagglutinin is normally a trimer, but for this tutorial we’ll be
+docking it as a monomer. (The antibodies we’re working with bind only to
+a single monomer.)</p>
+<ol type="1">
+<li><p>Create a new working directory, and download the 3GBN and 3GBM
+structures as PDB format.</p>
+<ol type="1">
+<li>Go to <a href="https://rcsb.org" class="uri">https://rcsb.org</a>
+and type ‘3gbn’ in the search bar.</li>
+<li>Click on ‘Download Files’ on the right side of the page, then ‘PDB
+Format’.</li>
+<li>Save the PDB file in your working directory as
+<code>3gbn.pdb</code>.<br />
+(Note, the file may automatically download to your “Downloads” folder.
+If so, move the file into your working directory.)</li>
+<li>Repeat for 3gbm</li>
+</ol></li>
+<li><p>Open both structures in ChimeraX, and examine the chains for each
+structures. For structure 3GBM we have two complexes in the same crystal
+unit: ABHL and CDIM. The chains AB/CD represents the head domain and the
+stalk domain of the hemagglutinin protein, and HL/IM the CR6261 heavy
+and light chains. For structure 3GBN we have the single complex ABHL. In
+the next step we will extract the chain of interest for this
+cross-docking experiment: chains AB for 3GBM and chains HL for
+3GBN.</p></li>
+</ol>
+<h2 id="structure-pre-processing">Structure pre-processing</h2>
+<p>We need to extract only the chains of interest from each structure.
+With both structure open in ChimeraX:</p>
+<ol type="1">
+<li>From 3GBM we want chains A &amp; B, but only the protein residues
+<ol type="1">
+<li>Select the chains: <code>select #1/A,B &amp; protein</code> (assumes
+3GBM is model #1)</li>
+<li>Save the chains as 3gbm_AB.pdb<br />
+(File-&gt;Save-&gt;File of Type-&gt;PDB-&gt;Save selected atoms
+only)</li>
+</ol></li>
+<li>From 3GBN we want to save chains H &amp; L. But when you examine the
+structure, notice how the H&amp;L chains contains incomplete portions of
+the full-length antibody. For the purposes of docking, we only need the
+Fv region (the well-formed domains).
+<ol type="1">
+<li>Visualize the C-terminal bit of chain H to remove:
+<code>color #2/H:112-188 magenta</code> (assumes 3GBN is model #2)</li>
+<li>Remove the same selection: <code>delete #2/H:112-188</code></li>
+<li>Visualize the C-terminal bit of chain L to remove:
+<code>color #2/L:106-195 magenta</code></li>
+<li>Remove the same selection: <code>delete #2/L:106-195</code></li>
+<li>Select the chains: <code>select #2/H,L</code></li>
+<li>Save the file as 3gbn_HL.pdb<br />
+(File-&gt;Save-&gt;File of Type-&gt;PDB-&gt;Save selected atoms
+only)</li>
+</ol></li>
+</ol>
+<p>Reopen the 3gbm_AB.pdb and 3gbn_HL.pdb structures in ChimeraX, making
+sure the structures are what you expect them to be.</p>
+<h2 id="refine-the-starting-structures">Refine the starting
+structures</h2>
+<p>Structure refinement is essential for any post-processing step in
+Rosetta to remove clashes that might be present in the crystal
+structure. Refinement can be performed at multiple levels: repack
+(side-chains only), minimization (side-chains and backbone) or relax,
+which involve multiple cycles of repack and minimization.</p>
+<p>We will use the ROSIE relax application to relax the structures into
+the Rosetta energy function. To keep the structure backbones close to
+what was crystallized, we’ll be adding coordinates tethers
+(restraints/constraints) to the backbone atoms.</p>
+<ol type="1">
+<li>Go to <a href="https://rosie.rosettacommons.org"
+class="uri">https://rosie.rosettacommons.org</a> and click the Relax
+application.</li>
+<li>Log in with your Github account, if prompted.</li>
+<li>Upload the 3gbn_HL.pdb structure on the submission page</li>
+<li>Check the box labeled “tether backbone coordinates of the pdbs being
+relaxed to the coordinates in the xtal native”. Don’t tether sidechain
+atoms</li>
+<li>Give the job a descriptive name (e.g. “Relax 3gbn_HL.pdb”) and press
+“upload and queue job”</li>
+<li>Theoretically, you should repeat the submission for the 3gbm_AB.pdb
+structure, but as it’s larger, it takes much longer to relax. As such,
+we’ve provided a pre-relaxed version of the structure for you to
+use.</li>
+</ol>
+<p>The relax job will likely take some time (5-10 minutes) to make it to
+the front of the queue and run. You can keep the post-submission browser
+tab open to monitor the status, or go to <a
+href="https://r2.graylab.jhu.edu/queue"
+class="uri">https://r2.graylab.jhu.edu/queue</a> to check the state of
+your jobs.</p>
+<ul>
+<li>Once the job completes, go to the results page and click the
+download button next to “output/relaxed.pdb” to download the structure.
+Save the file as 3gbn_HL_relaxed.pdb (or 3gbm_AB_relaxed.pdb) in your
+working directory.</li>
+</ul>
+<p>It can also be useful to pre-generate backbone conformational
+diversity prior to docking particularly when the partners are
+crystallized separately. In this case, backbone tethers aren’t used, and
+multiple relaxed outputs with diverse backbone structures are docked
+with each other in separate docking runs. However, backbone
+conformational diversity will not be explored in this tutorial due to
+time limitations.</p>
+<h2 id="protein-protein-docking-setup.">Protein-protein docking
+setup.</h2>
+<p>For Rosetta protein-protein docking, both partners need to be in the
+same input PDB. It’s also ideal if the structures are roughly in their
+docked conformation (local docking). We can use this information to
+improve the efficiency of the docking process and the quality of the
+final model.</p>
+<p>For our docking protocol, we already know where the structures should
+roughly be docked, as we have a co-crystal structure of the
+partners.</p>
+<ol type="1">
+<li><p>Open 3gbn.pdb as well as the 3gbm_AB_relaxed.pdb and
+3gbn_HL_relaxed.pdb structures in ChimeraX.</p>
+<p>The following assumes 3gbn.pdb is model #1; 3gbm_AB_relaxed.pdb is
+model #2 and 3gbn_HL_relaxed.pdb is model #3</p></li>
+<li><p>Align the H &amp; L chains of 3gbn_HL_relaxed.pdb to the H &amp;
+L chains of 3gbn.pdb (via CA atoms)</p>
+<pre><code> align #3/H,L@CA &amp; protein toAtoms #1/H,L@CA &amp; protein matchNumbering true</code></pre></li>
+<li><p>Align the A &amp; B chains of 3gbm_AB_relaxed.pdb to the A &amp;
+B chains of 3gbn.pdb</p>
+<pre><code> align #2/A,B@CA &amp; protein toAtoms #1/A,B@CA &amp; protein matchNumbering true</code></pre></li>
+<li><p>Save the re-aligned chains to a file
+<code>combined.pdb</code></p>
+<p>File-&gt;Save-&gt;File of Type-&gt;PDB-&gt;(Make sure only
+3gbm_AB_relaxed.pdb and 3gbn_HL_relaxed.pdb are selected in the box –
+use ctrl-click or shift-click to select both.)</p></li>
+<li><p>Close/hide all open structures and open the combined.pdb file –
+check to make sure it’s what you expect it to be, has the all the chains
+in the expected relative orientation, and does not contain any extra
+residues from 3gbn.pdb.</p></li>
+</ol>
+<h2 id="docking">Docking</h2>
+<p>We’ll be using the ROSIE Docking application. This application is
+built for general protein-protein docking, but can be used for
+protein-antibody docking.</p>
+<ol type="1">
+<li>Go to <a href="https://rosie.rosettacommons.org"
+class="uri">https://rosie.rosettacommons.org</a> and click the Docking
+application.</li>
+<li>Click the “[documentation]” link to read the Docking <a
+href="https://r2.graylab.jhu.edu/apps/documentation/docking">documentation</a>.</li>
+<li>Upload the combined.pdb file to the “Combined PDB file” entry.</li>
+<li>Uncheck “use ensemble docking”</li>
+<li>Leave the reference model box blank</li>
+<li>Set the docking partners field to “AB_HL” (dock chains H&amp;L as a
+unit to chains A&amp;B)</li>
+<li>Enter a descriptive job name and click the “Upload and queue job”
+button.</li>
+</ol>
+<p>Protein-protein docking can take some time to run. You can work ahead
+with the post-analysis with the example structure provided.</p>
+<h2 id="analysis-of-docking-results.">Analysis of docking results.</h2>
+<h3 id="interpreting-rosie-output">Interpreting ROSIE output</h3>
+<p>The ROSIE output page presents the 10 top scoring structures by
+particular score metrics. The default is to rank the structures by the
+interface binding score (I_sc). This is Rosetta’s best guess as to the
+binding energy (in arbitrary units), with more negative being better.
+This can be changed to other metrics, but there generally isn’t a reason
+to do so.</p>
+<p>To help interpret the docking results, it also presents a
+score-versus rmsd plot (where by default the rmsd is plotted to the
+input structure). This “funnel plot” should ideally show the low-energy
+structures as all being low rmsd. Due to the Rosetta energy function
+being rough, it’s not a problem if a low rmsd structure is a higher
+energy. So as you go from high energies to lower energies, the plot for
+a successful run should make a “funnel” being broad at the top and
+narrow at the bottom, pointing toward 0 Ang rmsd. A successful funnel
+indicates that the Rosetta sampling method was able to successfully pick
+out a preferred (hopefully native) structure. While the stochastic
+nature of the Rosetta sampling algorithm means that not all output
+structures find the bottom of the docking well, having a number of
+structures which can pick it out consistently lends support to the idea
+that the low energy structures are native-like.</p>
+<p>The calculated rmsd depends on the reference structure used. If your
+input structure isn’t representative of the native structure, then the
+tip of the funnel may point to a higher rmsd value. Note, though, that
+rmsd space is not even. There’s “more room” at higher rmsds, so while
+two structures at 1 Ang rmsd are likely close to each other, two
+structures both at 10 Ang may not be similar to each other. So to be
+safe, if the funnel is pointing to a high rmsd structure, you often want
+to replot with rmsds calculated with the low energy structure as a
+reference. (However, if all the low energy structures are similar to
+each other when examined in ChimeraX or the like, then it’s likely the
+docking run is successful</p>
+<h3 id="examining-residue-energy-contributions.">Examining residue
+energy contributions.</h3>
+<p>ROSIE can provide energy information for protein structures
+(including protein-protein complexes), allowing a more detailed
+residue-by-residue examination of the interface.</p>
+<ol type="1">
+<li>Go to <a href="https://rosie.rosettacommons.org"
+class="uri">https://rosie.rosettacommons.org</a> and click the “Energy
+Breakdown” application.</li>
+<li>Upload the docked structure (if you’re working ahead, use the
+files/results/r_0715.pdb structure provided.)</li>
+<li>The default values of “ignore waters”, “ref2015” and not parameter
+files should be used.</li>
+<li>Enter a descriptive job name and click the “Upload and queue job”
+button.</li>
+</ol>
+<p>When the job finishes, the main outputs will be
+<code>per_residue_energies.tsv</code> and
+<code>residue_energy_breakdown.tsv</code> scorefiles in the “outputs”
+section. Download these files.</p>
+<p>The files are in a tabular format, and list calculated Rosetta Energy
+values for each residue (<code>per_residue_energies.tsv</code>) or for
+residue pairs (<code>residue_energy_breakdown.tsv</code>). These files
+can be opened with a spreadsheet program (e.g. Excel, LibreOffice Calc,
+Google Sheets). When importing, select the options to use spaces as
+delimiters and to merge adjacent delimiters.</p>
+<p>The files list all energies, including residue-internal energies and
+intra-chain energies. For docking purposes, we’re mainly interested in
+the inter-chain residue energies.i</p>
+<ol type="1">
+<li>Open <code>residue_energy_breakdown.tsv</code> with your spreadsheet
+program of choice.</li>
+<li>Residue pairs should be listed with the partner which comes earlier
+in the PDB coming first. We can use that to select only those lines
+which are between the two chains.
+<ol type="1">
+<li>Highlight and delete all the “onebody” terms at the top of the
+sheet.</li>
+<li>Scroll down to where the <code>pdbid1</code> listing switches from
+one binding partner to the other (e.g. A/B to H/L, or vice versa).</li>
+<li>Highlight all the lines after the switchover point and delete
+them.</li>
+<li>Sort by the <code>resid2</code> column.</li>
+<li>Scroll down to where the <code>pdbid2</code> listing switches from
+one binding partner to the other (e.g. A/B to H/L, or vice versa).</li>
+<li>Highlight all the lines <em>before</em> the switchover point (except
+the column label line) and delete them.</li>
+<li>If successful, all the remaining lines should just be between
+residues in one partner and the other.</li>
+</ol></li>
+<li>Sort the remaining lines (ascending) by the <code>total</code>
+column. More negative scores are better.</li>
+</ol>
+<p>Residue-residue pairs with a highly negative score are contributing
+favorably to the protein-protein binding interface (at least according
+to Rosetta). Residue pairs with a highly positive scores are potentially
+harming the protein-protein interface.</p>
+<p>For a detailed description of what each energy term means, please see
+Alford et al. <a href="https://doi.org/10.1021/acs.jctc.7b00125"
+class="uri">https://doi.org/10.1021/acs.jctc.7b00125</a> Briefly, here
+are the meanings of the non-zero terms you’re likely to see with
+<code>ref2015</code> scoring for residue-residue interactions between
+chains:</p>
+<ul>
+<li>fa_atr - the attractive component of the Lennard Jones (van der
+Waals) interaction</li>
+<li>fa_rep - the repulsive component of the the Lennard Jones (van der
+Waals) interaction</li>
+<li>fa_elec - the Coulombic electrostatic interaction</li>
+<li>fa_sol &amp; lk_ball_wtd- Implicit solvation burial terms (from
+Lazaridis &amp; Karplus, with modifications).</li>
+<li>hbond_sr_bb - “short range” (primarily alpha helical)
+backbone-backbone hydrogen bonds.</li>
+<li>hbond_lr_bb - “long range” (beta sheets &amp; loops)
+backbone-backbone hydrogen bonds</li>
+<li>hbond_bb_sc - sidechain-backbone hydrogen bonds</li>
+<li>hbond_sc - sidechain-sidechain hydrogen bonds</li>
+</ul>
+<p>(Other terms are either residue-internal energies, or will otherwise
+not show up for inter-chain residue-residue interactions.)</p>
+<p>Take a moment to look at the residues pairs which are highly scored
+(either negatively or positively):</p>
+<ul>
+<li>According to the scoring, what sort of interactions are contributing
+to that score value?</li>
+<li>Looking at the docked structure in ChimeraX and visualizing those
+residues, does that interaction make sense?</li>
+<li>Can you determine which interactions are sidechain-based and which
+are backbone based?</li>
+<li>Would this analysis be helpful in determining potential mutational
+effect experiments?</li>
+</ul>
+<p>Note that this analysis is somewhat basic. There are other protocols
+(e.g. the <a
+href="https://docs.rosettacommons.org/docs/latest/application_documentation/analysis/interface-analyzer">InterfaceAnalyzer</a>
+) which are more dedicated to analyzing and quantifying protein-protein
+interfaces. Additionally, there are protocols which more directly probe
+possible mutational analysis experiments.</p>
+<h2 id="advanced-docking-approaches.">Advanced docking approaches.</h2>
+<p>The protocol that we used to dock the two structures is a general
+protocol to do protein-protein docking, but other specialized protocols
+exist.</p>
+<h3 id="snugdock">SnugDock</h3>
+<p>Snugdock (<a href="https://doi.org/10.1371/journal.pcbi.1000644"
+class="uri">https://doi.org/10.1371/journal.pcbi.1000644</a>) is an
+antibody-specific docking protocol. In addition to the rigid body
+rotation and translation sampling, Snugdock optimizes the interchain
+heavy/light chain orientation, which has been shown to be important for
+antibody/antigen binding. Snugdock is available as a ROSIE server (<a
+href="https://rosie.rosettacommons.org/snug_dock"
+class="uri">https://rosie.rosettacommons.org/snug_dock</a>).</p>
+<h3 id="alphafold-other-ml-structure-prediction-packages">AlphaFold
+&amp; other ML structure prediction packages</h3>
+<p>Most machine-learning based structure prediction programs these days
+can be used to predict the structures of protein complexes. You simply
+have to give them the multiple chains you want to predict as a
+complex.</p>
+<p>If you have time, try inputing the sequences of the A, B, H &amp; L
+chains to a machine learning approach such as AlphaFold3 (<a
+href="https://alphafoldserver.com"
+class="uri">https://alphafoldserver.com</a>) or ColabFold (<a
+href="https://colab.research.google.com/github/sokrypton/ColabFold/blob/main/AlphaFold2.ipynb"
+class="uri">https://colab.research.google.com/github/sokrypton/ColabFold/blob/main/AlphaFold2.ipynb</a>).
+(For ColabFold, enter the sequence of each chain with a colon between
+it.)</p>
+<p>Note that for protein-protein docking, in addition to the standard
+quality metrics like pTM and pLDDT, the pAE (predicted aligned error)
+metric is of particular importance. pAE measures the estimated error of
+residue-pairwise structure. As such, it’s good to look at the
+between-chain pAE values, as that’s the best estimate of how well the
+chains are placed (docked) relative to each other. If the ML model was
+able to successfully predict the monomer and thus the majority of a
+residues neighbors, that residue might still have a reasonably decent
+pLDDT value, despite not being in the proper orientation with respect to
+the binding partner. The pAE value of that residue with respect to the
+other residues in the chain should give a better sense of how accurately
+that residue was docked.</p>
+<p>It’s worth noting that most machine learning structure prediction
+packages still have difficulties with antibody/antigen complexes,
+particularly ones which don’t have related complexes in the PDB. Extra
+scrutiny of such complexes is warranted.</p>
+<p>It’s also worth noting that ML complex predictions can be used as
+input to classical physics based docking approaches, if you want to
+further diversify and refine them.</p>
+<h3 id="alphared">AlphaRed</h3>
+<p>Alpha Red (<a
+href="https://www.biorxiv.org/content/10.1101/2023.07.28.551063v1"
+class="uri">https://www.biorxiv.org/content/10.1101/2023.07.28.551063v1</a>
+is a method which builds on AlphaFold multimer prediction, and combines
+it with a physics based replica exchange approach to further diversify
+and refine the docked structures. It has been shown to successfully find
+the native complex structures in cases where AlphaFold by itself does
+not. In particular, in a benchmark of antibody/antigen complexes, it
+improved the successful docking rate from 19% to 51%. AlphaRed is
+available as a ROSIE server <a
+href="https://r2.graylab.jhu.edu/apps/submit/alpha-red"
+class="uri">https://r2.graylab.jhu.edu/apps/submit/alpha-red</a></p>
