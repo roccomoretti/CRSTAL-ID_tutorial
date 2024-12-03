@@ -65,9 +65,9 @@ For Rosetta protein-protein docking, both partners need to be in the same input 
 
 For our docking protocol, we already know where the structures should roughly be docked, as we have a co-crystal structure of the partners.
 
-1. Open 3gbn.pdb as well as the 3gbm_AB_relaxed.pdb and 3gbn_HL_relaxed.pdb structures in ChimeraX.  
+1. Open 3gbm.pdb as well as the 3gbm_AB_relaxed.pdb and 3gbn_HL_relaxed.pdb structures in ChimeraX.  
 
-	The following assumes 3gbn.pdb is model #1; 3gbm_AB_relaxed.pdb is model #2 and 3gbn_HL_relaxed.pdb is model #3
+	The following assumes 3gbm.pdb is model #1; 3gbm_AB_relaxed.pdb is model #2 and 3gbn_HL_relaxed.pdb is model #3
 
 2. Align the H & L chains of 3gbn_HL_relaxed.pdb to the H & L chains of 3gbn.pdb (via CA atoms) 
  
